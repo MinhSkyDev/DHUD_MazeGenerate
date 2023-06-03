@@ -7,19 +7,27 @@
 
 .form-container label {
   display: inline-block;
+  height: fit-content;
 }
 
+.canvas-container {
+  width: fit-content;
+  position: relative;
+}
 #myCanvas {
   /* aspect-ratio: 6144 / 5016; */
   border: solid 1px #f550d4;  
   width: 100%; 
+  height: 100%;
   object-fit: contain; 
   overflow: scroll; 
+  aspect-ratio: 16 / 7;
 }
 
 #myDialog {
   width: 200px;
-  position: absolute;
-  left: 0;
-  top: 50%;
+  /* position: absolute; */
+  /* left: 50%; */
+  /* top: 50%; */
+  /* transform: translate(-50%, -50%); */
 }

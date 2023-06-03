@@ -8,13 +8,13 @@
     <title>Maze generator</title>
   </head>
   <body>
-    <!-- <div style="width: 97vw;"> -->
-      <!-- <canvas id="myCanvas" width="1024" height="1024"></canvas> -->
-      <canvas id="myCanvas"></canvas>
+      <div class="canvas-container">
+        <canvas id="myCanvas"></canvas>
+      </div>  
       <div class="form-container">
         <form id="myForm">
           <label>Kích thước mê cung (từ 30 đến 100, mặc định là 50): </label>
-          <input type="number" name="mazeSize" min="30" max="100">
+          <input type="number" name="mazeSize" min="10" max="100">
           <br>
           <label>Màu mê cung: </label>
           <input type="color" name="mazeColor" id="mazeColor" value="#4f71b9">
@@ -25,16 +25,13 @@
             <option value="DFS">DFS</option>
           </select>
           <br>
-          <button type="submit" name="submitBtn" value="123">Generate!</button>
+          <button type="submit" name="submitBtn">Generate!</button>
         </form>
       </div>
-      <!-- <button onclick=dfs(5,5)>Click</button> -->
-      <dialog close id="myDialog">
-        <p id="dialogText"></p>
+      <dialog id="myDialog">
+        <p id="dialogText">Đã sinh mê cung xong!</p>
         <button id="closeDialogBtn" name="closeDialogBtn">click to close</button>
       </dialog>
       <script src="script2.js"></script>
-
-    <!-- </div> -->
   </body>
 </html>

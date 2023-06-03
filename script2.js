@@ -75,7 +75,7 @@ function drawCube(x, y, wx, wy, h, color, per) {
 }
 
 function drawMaze() {
-  offScreenCTX.clearRect(0, 0, offScreenCVS.width, offScreenCVS.height);
+  bgCtx.clearRect(0, 0, bg.width, bg.height);
   for (let y = 0; y < grid.length; y++) {
     for (let x = 0; x < grid[y].length; x++) {
       let xPos = xO + cellSize * (x - y);
@@ -118,6 +118,7 @@ function shadeColor(color, percent) {
 
 function get2DArray() {
   //Make the 2D array to hold all objects
+  grid=[]
   for (let i = 0; i < maze.length; i++) {
     grid[i] = [];
     for (let j = 0; j < maze[i].length; j++) {
@@ -221,9 +222,10 @@ async function dfs(x, y, rows, columns, cnt) {
 async function generateMaze(rows, columns, algo) {
   // Create the maze grid
   // var cnt =0;
+  maze=[]
   for (let i = 0; i < rows; i++) {
     maze[i] = [];
-    for (let j = 0; j < columns; j++) {
+    for (let j = 0; j <  columns; j++) {
       maze[i][j] = 1; // Initialize all cells as walls
     }
   }
@@ -257,9 +259,7 @@ var dialogText = document.getElementById("dialogText")
 var closeDialogBtn = document.getElementById("closeDialogBtn")
 
 closeDialogBtn.onclick = () => {
-  console.log("click")
-  dialog.removeAttribute('open')
-  dialog.setAttribute('close', "")
+  dialog.close()
 }
 
 colorPicker.onchange = () => {
@@ -276,9 +276,8 @@ myForm.onsubmit = function formHandle(e) {
   myForm.submitBtn.setAttribute('disabled', "")
   generateMaze(mazeSize, mazeSize, myForm.mazeAlgo.value).then(() => {
     myForm.submitBtn.removeAttribute('disabled')
-    dialog.removeAttribute('close')
-    dialog.setAttribute('open', "")
-    dialogText.innerHTML = "Done"
+    dialog.showModal()
+    // dialogText.innerHTML = "Done"
     console.log(maze);
   });
 }
