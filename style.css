@@ -1,0 +1,25 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-container label {
+  display: inline-block;
+}
+
+#myCanvas {
+  /* aspect-ratio: 6144 / 5016; */
+  border: solid 1px #f550d4;  
+  width: 100%; 
+  object-fit: contain; 
+  overflow: scroll; 
+}
+
+#myDialog {
+  width: 200px;
+  position: absolute;
+  left: 0;
+  top: 50%;
+}
