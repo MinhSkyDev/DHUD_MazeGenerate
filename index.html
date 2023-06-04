@@ -2,10 +2,37 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Maze generator</title>
   </head>
   <body>
-    <canvas id="myCanvas" width="1024" height="1024"></canvas>
-    <script src="script2.js"></script>
+      <div class="canvas-container">
+        <canvas id="myCanvas"></canvas>
+      </div>
+      <div class="form-container">
+        <form id="myForm">
+          <label>Kích thước mê cung (từ 30 đến 100, mặc định là 50): </label>
+          <input type="number" name="mazeSize" min="10" max="100">
+          <br>
+          <label>Màu mê cung: </label>
+          <input type="color" name="mazeColor" id="mazeColor" value="#4f71b9">
+          <!-- <label class="colorBtn" for="color"></label> -->
+          <br>
+          <label>Chọn thuật toán để sinh mê cung:</label>
+          <select name="mazeAlgo" id="mazeAlgo">
+            <option value="DFS">DFS</option>
+            <option value="Sidewinder">Sidewinder</option>
+          </select>
+          <br>
+          <button type="submit" name="submitBtn">Generate!</button>
+        </form>
+      </div>
+      <dialog id="myDialog">
+        <p id="dialogText">Đã sinh mê cung xong!</p>
+        <button id="closeDialogBtn" name="closeDialogBtn">click to close</button>
+      </dialog>
+      <script src="script2.js"></script>
   </body>
 </html>

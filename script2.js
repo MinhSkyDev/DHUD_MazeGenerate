@@ -7,9 +7,9 @@ let bg = document.getElementById("myCanvas"),
   //sharpen * 4
   bgw = (bg.width = window.innerWidth * 4),
   bgh = (bg.height = window.innerHeight * 4);
-bg.style.width = window.innerWidth + "px";
-bg.style.height = window.innerHeight + "px";
-
+// bg.style.width = window.innerWidth + "px";
+// bg.style.height =   (bg.style.width*0.5625) + "px";
+// bg.style.height = window.innerWidth + "px";
 
 let xO = bgw * 0.5;
 let yO = bgh * 0.1;
@@ -23,7 +23,8 @@ let perspective = 0.7;
 let grid = [];
 let maze = [];
 
-function dfsGenerateMaze(rows, columns) {
+async function dfsGenerateMaze(rows, columns) {
+  maze = [];
   // Create the maze grid
   for (let i = 0; i < rows; i++) {
     maze[i] = [];
@@ -41,7 +42,7 @@ function dfsGenerateMaze(rows, columns) {
   const startY = Math.floor(Math.random() * columns);
   maze[startX][startY] = 0; // Set starting point as a path
 
-  dfs(startX, startY); // Start the DFS from the starting point
+  await dfs(startX, startY); // Start the DFS from the starting point
 
   // Recursive depth-first search function
   async function dfs(x, y) {
@@ -82,144 +83,6 @@ function dfsGenerateMaze(rows, columns) {
       }
     }
   }
-
-  return maze;
-}
-
-
-async function sideWinderGenerateMaze(rows, cols, bias) {
-  for (let i = 0; i < rows; i++) {
-    const row = [];
-    for (let j = 0; j < cols; j++) {
-      row.push(1);
-    }
-    maze.push(row);
-  }
-
-  // Generate the maze
-  for (let row = 0; row < rows; row++) {
-    let run = [];
-    for (let col = 0; col < cols; col++) {
-      run.push([row, col]);
-
-      const atEasternBoundary = col === cols - 1;
-      const atNorthernBoundary = row === 0;
-
-      const shouldCloseOut =
-        atEasternBoundary ||
-        (!atNorthernBoundary && Math.random() < bias);
-
-      if (shouldCloseOut) {
-        const [runRow, runCol] = run[Math.floor(Math.random() * run.length)];
-        maze[runRow][runCol] = 0;
-
-        if (!atNorthernBoundary) {
-          const [aboveRow, aboveCol] = run[Math.floor(Math.random() * run.length)];
-          maze[aboveRow - 1][aboveCol] = 1;
-        }
-
-        run = [];
-      } else {
-        maze[row][col] = 0;
-      }
-  }
-  get2DArray();
-  bgCtx.clearRect(0, 0, bg.width, bg.height);
-  drawMaze();
-  await sleep(100);
-
-}
-
-return maze;
-}
-
-
-
-//Vừa sinh vừa vẽ
-//DFS
-// maze = dfsGenerateMaze(50,50);
-
-//SlideWinder
-sideWinderGenerateMaze(100,100,0.4).then(maze => {
-  console.log(maze);
-  get2DArray();
-  drawMaze();
-})
-
-
-//Vẽ xong mới log maze ra
-console.log(maze);
-
-function get2DArray() {
-  //Make the 2D array to hold all objects
-  for (let i = 0; i < maze.length; i++) {
-    grid[i] = [];
-    for (let j = 0; j < maze[i].length; j++) {
-      color_code = "transparent";
-      if(maze[i][j] === 0){
-        color_code = "#4571b9";
-      }
-      grid[i][j] = {
-        color: color_code,
-        cost: 1,
-        type: "free",
-        x: i,
-        y: j,
-        gCost: 0,
-        hCost: 0,
-        fCost: 0
-      };
-    }
-  }
-}
-
-
-//---------Render mê cung ở đây-----------//
-get2DArray();
-drawMaze();
-console.log("the end");
-
-
-function drawMaze() {
-  for (let y = 0; y < grid.length; y++) {
-    for (let x = 0; x < grid[y].length; x++) {
-      let xPos = xO + cellSize * (x - y);
-      let yPos = yO + perspective * (cellSize * (x + y));
-      if (grid[y][x].color === "transparent") {
-        continue;
-      }
-
-      drawCube(
-        xPos,
-        yPos,
-        cellSize,
-        cellSize,
-        cellSize,
-        grid[y][x].color,
-        perspective
-      );
-    }
-  }
-}
-
-function shadeColor(color, percent) {
-  color = color.substr(1);
-  var num = parseInt(color, 16),
-    amt = Math.round(2.55 * percent),
-    R = (num >> 16) + amt,
-    G = ((num >> 8) & 0x00ff) + amt,
-    B = (num & 0x0000ff) + amt;
-  return (
-    "#" +
-    (
-      0x1000000 +
-      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
-      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
-      (B < 255 ? (B < 1 ? 0 : B) : 255)
-    )
-      .toString(16)
-      .slice(1)
-  );
 }
 
 function drawCube(x, y, wx, wy, h, color, per) {
@@ -259,3 +122,199 @@ function drawCube(x, y, wx, wy, h, color, per) {
   bgCtx.stroke();
   bgCtx.fill();
 }
+
+
+async function sideWinderGenerateMaze(rows, cols, bias) {
+  maze = [];
+  for (let i = 0; i < rows; i++) {
+    const row = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(1);
+    }
+    maze.push(row);
+  }
+
+  // Generate the maze
+  for (let row = 0; row < rows; row++) {
+    let run = [];
+    for (let col = 0; col < cols; col++) {
+      run.push([row, col]);
+
+      const atEasternBoundary = col === cols - 1;
+      const atNorthernBoundary = row === 0;
+
+      const shouldCloseOut =
+        atEasternBoundary ||
+        (!atNorthernBoundary && Math.random() < bias);
+
+      if (shouldCloseOut) {
+        const [runRow, runCol] = run[Math.floor(Math.random() * run.length)];
+        maze[runRow][runCol] = 1;
+
+        if (!atNorthernBoundary) {
+          const [aboveRow, aboveCol] = run[Math.floor(Math.random() * run.length)];
+          maze[aboveRow - 1][aboveCol] = 0;
+        }
+
+        run = [];
+      } else {
+        maze[row][col] = 1;
+      }
+  }
+  get2DArray();
+  drawMaze();
+  await sleep(100);
+
+}
+
+return maze;
+}
+
+
+
+//Vừa sinh vừa vẽ
+//DFS
+// maze = dfsGenerateMaze(50,50);
+
+// //SlideWinder
+// sideWinderGenerateMaze(100,100,0.4).then(maze => {
+//   console.log(maze);
+//   get2DArray();
+//   drawMaze();
+// })
+
+
+//Vẽ xong mới log maze ra
+console.log(maze);
+
+function get2DArray() {
+  //Make the 2D array to hold all objects
+
+  grid = [];
+  for (let i = 0; i < maze.length; i++) {
+    grid[i] = [];
+    for (let j = 0; j < maze[i].length; j++) {
+      color_code = "transparent";
+      if(maze[i][j] === 0){
+        color_code = "#4571b9";
+      }
+      grid[i][j] = {
+        color: color_code,
+        cost: 1,
+        type: "free",
+        x: i,
+        y: j,
+        gCost: 0,
+        hCost: 0,
+        fCost: 0
+      };
+    }
+  }
+}
+
+function drawMaze() {
+  bgCtx.clearRect(0, 0, bg.width, bg.height);
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[y].length; x++) {
+      let xPos = xO + cellSize * (x - y);
+      let yPos = yO + perspective * (cellSize * (x + y));
+      if (grid[y][x].color === "transparent") {
+        continue;
+      }
+      drawCube(
+        xPos,
+        yPos,
+        cellSize,
+        cellSize,
+        cellSize,
+        grid[y][x].color,
+        perspective
+      );
+    }
+  }
+}
+
+function shadeColor(color, percent) {
+  color = color.substr(1);
+  var num = parseInt(color, 16),
+    amt = Math.round(2.55 * percent),
+    R = (num >> 16) + amt,
+    G = ((num >> 8) & 0x00ff) + amt,
+    B = (num & 0x0000ff) + amt;
+  return (
+    "#" +
+    (
+      0x1000000 +
+      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+      (B < 255 ? (B < 1 ? 0 : B) : 255)
+    )
+      .toString(16)
+      .slice(1)
+  );
+}
+
+function get2DArray() {
+  //Make the 2D array to hold all objects
+  grid=[]
+  for (let i = 0; i < maze.length; i++) {
+    grid[i] = [];
+    for (let j = 0; j < maze[i].length; j++) {
+      color_code = "transparent";
+      if(maze[i][j] === 0){
+        color_code = mazeColor;
+      }
+      grid[i][j] = {
+        color: color_code,
+        cost: 1,
+        type: "free",
+        x: i,
+        y: j,
+        gCost: 0,
+        hCost: 0,
+        fCost: 0
+      };
+    }
+  }
+}
+
+
+
+async function generateMaze(rows, columns, algo) {
+
+  if(algo === "DFS"){
+    await dfsGenerateMaze(rows,columns);
+  }
+  else if(algo == "Sidewinder"){
+    await sideWinderGenerateMaze(rows,columns,0.5);
+  }
+}
+
+var myForm = document.getElementById("myForm")
+var colorPicker = document.getElementById("mazeColor")
+var dialog = document.getElementById("myDialog")
+var dialogText = document.getElementById("dialogText")
+var closeDialogBtn = document.getElementById("closeDialogBtn")
+
+closeDialogBtn.onclick = () => {
+  dialog.close()
+}
+
+colorPicker.onchange = () => {
+  mazeColor = myForm.mazeColor.value || mazeColor
+}
+
+let gencnt =0;
+myForm.onsubmit = function formHandle(e) {
+  e.preventDefault();
+  let mazeSize =  myForm.mazeSize.value || 50
+  mazeColor = myForm.mazeColor.value || mazeColor
+  // console.log(myForm.mazeAlgo.value)
+  gencnt++;
+  myForm.submitBtn.setAttribute('disabled', "")
+  generateMaze(mazeSize, mazeSize, myForm.mazeAlgo.value).then(() => {
+    myForm.submitBtn.removeAttribute('disabled');
+    // dialog.showModal()
+    // console.log(maze);
+  })
+};
