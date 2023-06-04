@@ -1,12 +1,3 @@
-//Create an offscreen canvas. This is where we will actually be drawing,
-//in order to keep the image consistent and free of distortions.
-let offScreenCVS = document.getElementById("myCanvas");
-let offScreenCTX = offScreenCVS.getContext("2d");
-
-//Set the dimensions of the drawing canvas
-offScreenCVS.width = 40;
-offScreenCVS.height = 40;
-
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -24,7 +15,7 @@ let xO = bgw * 0.5;
 let yO = bgh * 0.1;
 
 //Một ô sẽ có kích thước bao nhiêu
-let cellSize = 20;
+let cellSize = 15;
 
 //Góc nghiêng của mê cung
 let perspective = 0.7;
@@ -32,12 +23,12 @@ let perspective = 0.7;
 let grid = [];
 let maze = [];
 
-function generateMaze(rows, columns) {
+function dfsGenerateMaze(rows, columns) {
   // Create the maze grid
   for (let i = 0; i < rows; i++) {
     maze[i] = [];
     for (let j = 0; j < columns; j++) {
-      maze[i][j] = 1; // Initialize all cells as walls
+      maze[i].push(1); // Initialize all cells as walls
     }
   }
 
@@ -81,7 +72,11 @@ function generateMaze(rows, columns) {
           get2DArray();
           //From Grid draw to the Canvas
           drawMaze();
-          await sleep(1000).then(dfs(newX, newY));
+          await sleep(1).then( async ()=>{
+
+            await dfs(newX, newY);
+          }
+        );
 
         }
       }
@@ -91,8 +86,67 @@ function generateMaze(rows, columns) {
   return maze;
 }
 
+
+async function sideWinderGenerateMaze(rows, cols, bias) {
+  for (let i = 0; i < rows; i++) {
+    const row = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(1);
+    }
+    maze.push(row);
+  }
+
+  // Generate the maze
+  for (let row = 0; row < rows; row++) {
+    let run = [];
+    for (let col = 0; col < cols; col++) {
+      run.push([row, col]);
+
+      const atEasternBoundary = col === cols - 1;
+      const atNorthernBoundary = row === 0;
+
+      const shouldCloseOut =
+        atEasternBoundary ||
+        (!atNorthernBoundary && Math.random() < bias);
+
+      if (shouldCloseOut) {
+        const [runRow, runCol] = run[Math.floor(Math.random() * run.length)];
+        maze[runRow][runCol] = 0;
+
+        if (!atNorthernBoundary) {
+          const [aboveRow, aboveCol] = run[Math.floor(Math.random() * run.length)];
+          maze[aboveRow - 1][aboveCol] = 1;
+        }
+
+        run = [];
+      } else {
+        maze[row][col] = 0;
+      }
+  }
+  get2DArray();
+  bgCtx.clearRect(0, 0, bg.width, bg.height);
+  drawMaze();
+  await sleep(100);
+
+}
+
+return maze;
+}
+
+
+
 //Vừa sinh vừa vẽ
-maze = generateMaze(50,50);
+//DFS
+// maze = dfsGenerateMaze(50,50);
+
+//SlideWinder
+sideWinderGenerateMaze(100,100,0.4).then(maze => {
+  console.log(maze);
+  get2DArray();
+  drawMaze();
+})
+
+
 //Vẽ xong mới log maze ra
 console.log(maze);
 
@@ -103,7 +157,7 @@ function get2DArray() {
     for (let j = 0; j < maze[i].length; j++) {
       color_code = "transparent";
       if(maze[i][j] === 0){
-        color_code = "#4f71b9";
+        color_code = "#4571b9";
       }
       grid[i][j] = {
         color: color_code,
