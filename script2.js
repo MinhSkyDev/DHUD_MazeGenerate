@@ -73,7 +73,7 @@ async function dfsGenerateMaze(rows, columns) {
           get2DArray();
           //From Grid draw to the Canvas
           drawMaze();
-          await sleep(1).then( async ()=>{
+          await sleep(100).then( async ()=>{
 
             await dfs(newX, newY);
           }
@@ -84,7 +84,285 @@ async function dfsGenerateMaze(rows, columns) {
     }
   }
 }
+async function sideWinderGenerateMaze(rows, cols, bias) {
+  maze = [];
+  for (let i = 0; i < rows; i++) {
+    const row = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(1);
+    }
+    maze.push(row);
+  }
 
+  // Generate the maze
+  for (let row = 0; row < rows; row++) {
+    let run = [];
+    for (let col = 0; col < cols; col++) {
+      run.push([row, col]);
+
+      const atEasternBoundary = col === cols - 1;
+      const atNorthernBoundary = row === 0;
+
+      const shouldCloseOut =
+      atEasternBoundary ||
+      (!atNorthernBoundary && Math.random() < bias);
+
+      if (shouldCloseOut) {
+        const [runRow, runCol] = run[Math.floor(Math.random() * run.length)];
+        maze[runRow][runCol] = 1;
+
+        if (!atNorthernBoundary) {
+          const [aboveRow, aboveCol] = run[Math.floor(Math.random() * run.length)];
+          maze[aboveRow - 1][aboveCol] = 0;
+        }
+
+        run = [];
+      } else {
+        maze[row][col] = 1;
+      }
+    }
+    get2DArray();
+    drawMaze();
+    await sleep(100);
+
+  }
+  return maze;
+}
+
+///***Eller Algorithm***
+class Cell {
+    constructor(x, y) {
+        this.top = false;
+        this.bottom = false;
+        this.left = false;
+        this.right = false;
+
+        // write only for equality comparison
+        this.x = x;
+        this.y = y;
+
+        this.parentSet = null;
+    }
+}
+var rows_eller = [];
+function makeEllerRows(rows,cellCount) {
+  function randomBool() {
+    return Math.random() < 0.5;
+  }
+
+    var currentRow = []
+    for (var q=0; q<cellCount; q++) {
+        var y = rows.length;
+        // 1. create the first row, no cells are members of any set
+        if (rows.length == 0) {
+            console.log("creating the first row");
+            for (var x=0; x<cellCount; x++) {
+                var c = new Cell(x, y);
+                currentRow.push(c);
+            }
+        }
+
+        // 2. join any cells not members of a set to their own unique set
+        console.log("making unique sets for lone cells");
+        for (var i=0; i<currentRow.length; i++) {
+            if (currentRow[i].parentSet == null) {
+                currentRow[i].parentSet = new Set();
+                currentRow[i].parentSet.add(currentRow[i]);
+            }
+        }
+
+        // 3. create right walls, moving from left to right
+        console.log("creating right walls")
+        for (var i=0; i<currentRow.length-1; i++) {
+            // if the current cell and the cell to the right
+            // are members of the same set, always create a wall between them
+            // if not, randomly add right walls
+            if (
+                (currentRow[i].parentSet === currentRow[i+1].parentSet) || randomBool()
+                ) {
+                currentRow[i].right = true;
+            } else {
+                // if no wall, union the sets
+                currentRow[i].parentSet.union(currentRow[i+1].parentSet);
+            }
+        }
+
+        // 4. create bottom walls, moving from left to right
+        console.log("creating bottom rows");
+        for (var i=0; i<currentRow.length; i++) {
+            // if the cell is the only one in its set, don't make a bottom wall
+            // if the cell is the only member of its set without a bottom wall, don't make a bottom wall
+            // if not, randomly add a bottom wall
+            if (
+                currentRow[i].parentSet.size > 0
+                && !(!currentRow[i].bottom && (notBottomCount(currentRow[i].parentSet) == 1))
+                && randomBool()
+                ) {
+                    currentRow[i].bottom = true;
+                }
+        }
+
+        //5. if it's the last row
+        if (rows.length == cellCount-1) {
+            // add a bottom wall to every cell
+            //print("done, cleaning up");
+
+            // if current cell and cell to right are different sets
+            for (var i=0; i<currentRow.length-1; i++) {
+                if (currentRow[i].parentSet != currentRow[i+1].parentSet) {
+                    // remove the right wall
+                    currentRow[i].right = false;
+                    currentRow[i+1].left = false;
+                    // union sets
+                    currentRow[i].parentSet.union(currentRow[i+1].parentSet);
+                }
+            }
+            // then output
+            output(currentRow);
+        } else {
+            // output the current row
+            output(currentRow);
+
+            for (var i=0; i<currentRow.length-1; i++) {
+                currentRow[i].right = false;
+            }
+            //remove all cells with a bottom wall from their set
+            for (var i=0; i<currentRow.length; i++) {
+                if (currentRow[i].bottom) {
+                    currentRow[i].parentSet.delete(currentRow[i]);
+                    currentRow[i].parentSet = null;
+                }
+            }
+            // remove all bottom walls
+            for (var i=0; i<currentRow.length; i++) {
+                currentRow[i].bottom = false;
+            }
+        }
+        // console.log(currentRow);
+    }
+
+    // finally add the walls on the top and sides
+    console.log("done, cleaning up");
+    for (var i=0; i<rows.length; i++) {
+        for (var j=0; j<rows[i].length; j++) {
+            if (i == 0) {
+                rows[i][j].top = true;
+            } else if (i == rows.length-1) {
+                rows[i][j].bottom = true;
+            }
+
+            if (j == 0) {
+                rows[i][j].left = true;
+            } else if (j == rows[i].length-1) {
+                rows[i][j].right = true;
+            }
+        }
+    }
+
+    rows[0][0].top = false;
+    rows[rows.length-1][rows[0].length-1].bottom = false;
+
+
+    function output(row) {
+      rows.push(JSON.parse(JSON.stringify(row)));
+      // then move y down
+      for (var i=0; i<row.length; i++) {
+        row[i].y += 1;
+      }
+    }
+
+    function notBottomCount(s) {
+      var c = 0;
+      s.forEach(function(x) {
+        if (!x.bottom) c++;
+      });
+      return c;
+    }
+
+}
+async function createEllerMaze(rows,cellCount){
+  maze = [];
+  function initRow(row_up,row_mid,row_down){
+    for(let i =0; i< cellCount; i++){
+      for(let j = 0; j < 3;j++){
+        row_up.push(-1);
+        row_mid.push(-1);
+        row_down.push(-1);
+      }
+    }
+  }
+
+  for(let i =0; i< rows.length; i++){
+    let row_mid = [];
+    let row_bottom = [];
+    let row_up = [];
+    initRow(row_up, row_mid, row_bottom);
+    for(let j=0; j< rows[i].length; j++){
+      mid_position = 1 + j*3;
+      row_mid[mid_position] = 0;
+
+      //left
+      if(rows[i][j].left){
+        row_mid[mid_position -1] = 0;
+      }
+      else{
+        row_mid[mid_position -1] = 1;
+      }
+
+      //right
+      if(rows[i][j].right){
+        row_mid[mid_position +1] = 0;
+      }
+      else{
+        row_mid[mid_position +1] = 1;
+      }
+
+      if(rows[i][j].bottom){
+        row_bottom[mid_position] = 0;
+      }
+      else{
+        row_bottom[mid_position] = 1;
+      }
+
+      //proccess every things left
+      for(let index =0; index< row_mid.length; index++){
+        // if(row_up[index] == -1){
+        //   row_up[index] = 1;
+        // }
+        // else{
+        //   //Do nothing
+        // }
+
+        if(row_bottom[index] == -1){
+          row_bottom[index] = 1;
+        }
+        else{
+          //do nothing
+        }
+      }
+    }
+    maze.push(row_mid);
+    maze.push(row_bottom);
+    get2DArray();
+    drawMaze();
+    await sleep(200);
+  }
+  get2DArray();
+  drawMaze();
+}
+
+//thêm phương thức cho lớp Set
+Set.prototype.union = function(setB) {
+  for (let elem of setB) {
+    elem.parentSet = this;
+    this.add(elem)
+  }
+}
+
+
+
+
+//**Drawing function**
 function drawCube(x, y, wx, wy, h, color, per) {
   //left
   bgCtx.beginPath();
@@ -122,70 +400,6 @@ function drawCube(x, y, wx, wy, h, color, per) {
   bgCtx.stroke();
   bgCtx.fill();
 }
-
-
-async function sideWinderGenerateMaze(rows, cols, bias) {
-  maze = [];
-  for (let i = 0; i < rows; i++) {
-    const row = [];
-    for (let j = 0; j < cols; j++) {
-      row.push(1);
-    }
-    maze.push(row);
-  }
-
-  // Generate the maze
-  for (let row = 0; row < rows; row++) {
-    let run = [];
-    for (let col = 0; col < cols; col++) {
-      run.push([row, col]);
-
-      const atEasternBoundary = col === cols - 1;
-      const atNorthernBoundary = row === 0;
-
-      const shouldCloseOut =
-        atEasternBoundary ||
-        (!atNorthernBoundary && Math.random() < bias);
-
-      if (shouldCloseOut) {
-        const [runRow, runCol] = run[Math.floor(Math.random() * run.length)];
-        maze[runRow][runCol] = 1;
-
-        if (!atNorthernBoundary) {
-          const [aboveRow, aboveCol] = run[Math.floor(Math.random() * run.length)];
-          maze[aboveRow - 1][aboveCol] = 0;
-        }
-
-        run = [];
-      } else {
-        maze[row][col] = 1;
-      }
-  }
-  get2DArray();
-  drawMaze();
-  await sleep(100);
-
-}
-
-return maze;
-}
-
-
-
-//Vừa sinh vừa vẽ
-//DFS
-// maze = dfsGenerateMaze(50,50);
-
-// //SlideWinder
-// sideWinderGenerateMaze(100,100,0.4).then(maze => {
-//   console.log(maze);
-//   get2DArray();
-//   drawMaze();
-// })
-
-
-//Vẽ xong mới log maze ra
-console.log(maze);
 
 function get2DArray() {
   //Make the 2D array to hold all objects
@@ -287,6 +501,12 @@ async function generateMaze(rows, columns, algo) {
   }
   else if(algo == "Sidewinder"){
     await sideWinderGenerateMaze(rows,columns,0.5);
+  }
+  else if(algo == "Eller"){
+    rows_eller = [];
+    makeEllerRows(rows_eller,rows);
+    await createEllerMaze(rows_eller,rows);
+    console.log(maze);
   }
 }
 
