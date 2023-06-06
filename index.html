@@ -8,28 +8,47 @@
     <title>Maze generator</title>
   </head>
   <body>
-      <div class="canvas-container">
-        <canvas id="myCanvas"></canvas>
-      </div>
-      <div class="form-container">
-        <form id="myForm">
-          <label>Kích thước mê cung (từ 30 đến 100, mặc định là 50): </label>
-          <input type="number" name="mazeSize" min="10" max="100">
-          <br>
-          <label>Màu mê cung: </label>
-          <input type="color" name="mazeColor" id="mazeColor" value="#4f71b9">
-          <!-- <label class="colorBtn" for="color"></label> -->
-          <br>
-          <label>Chọn thuật toán để sinh mê cung:</label>
-          <select name="mazeAlgo" id="mazeAlgo">
-            <option value="DFS">DFS</option>
-            <option value="Sidewinder">Sidewinder</option>
-            <option value="Eller">Eller</option>
-          </select>
-          <br>
-          <button type="submit" name="submitBtn">Generate!</button>
-        </form>
-      </div>
+      <div class="container">
+        <div class="canvas-container">
+          <canvas id="myCanvas"></canvas>
+        </div>
+        <div class="form-container">
+          <p>Maze Generator</p>
+          <form id="myForm">
+            <div class="input-container">
+              <label class="main-label">Kích thước mê cung (từ 10 đến 100, mặc định là 50): </label>
+              <br>
+              <div>
+                <label>Chiều dài: </label>
+                <input type="number" name="width" min="10" max="100"></div>
+              <div>
+                <label>Chiều cao: </label>
+                <input type="number" name="height" min="10" max="100">
+              </div>
+              <br>
+            </div>
+            <div class="input-container">
+              <label>Màu mê cung: </label>
+              <input type="color" name="mazeColor" id="mazeColor" value="#4f71b9">
+            </div>
+            <div class="input-container">
+              <label>Tốc độ: </label>
+              <span id="spd-value">50</span>
+              <input type="range" name="spdbar" id="spdbar" min=1 max=100 value=50>
+
+            </div>
+            <div class="input-container">
+              <label>Chọn thuật toán để sinh mê cung:</label>
+              <select name="mazeAlgo" id="mazeAlgo">
+                <option value="DFS">DFS</option>
+                <option value="Sidewinder">Sidewinder</option>
+                <option value="Eller">Eller</option>
+              </select>
+            </div>
+            <button type="submit" name="submitBtn" class="submit-btn">Generate!</button>
+          </form>
+        </div>
+       </div>
       <dialog id="myDialog">
         <p id="dialogText">Đã sinh mê cung xong!</p>
         <button id="closeDialogBtn" name="closeDialogBtn">click to close</button>

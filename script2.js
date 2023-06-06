@@ -16,6 +16,8 @@ let yO = bgh * 0.1;
 
 //Một ô sẽ có kích thước bao nhiêu
 let cellSize = 15;
+let ratio = [0, 5, 5, 4, 3, 2, 1, 1, 1, 1, 1 ]
+let spdRatio = 50;
 
 //Góc nghiêng của mê cung
 let perspective = 0.7;
@@ -73,7 +75,7 @@ async function dfsGenerateMaze(rows, columns) {
           get2DArray();
           //From Grid draw to the Canvas
           drawMaze();
-          await sleep(100).then( async ()=>{
+          await sleep((2100-spdRatio*20)).then( async ()=>{
 
             await dfs(newX, newY);
           }
@@ -123,7 +125,7 @@ async function sideWinderGenerateMaze(rows, cols, bias) {
     }
     get2DArray();
     drawMaze();
-    await sleep(100);
+    await sleep((2100-spdRatio*20));
 
   }
   return maze;
@@ -345,7 +347,7 @@ async function createEllerMaze(rows,cellCount){
     maze.push(row_bottom);
     get2DArray();
     drawMaze();
-    await sleep(200);
+    await sleep((2100-spdRatio*20));
   }
   get2DArray();
   drawMaze();
@@ -401,30 +403,30 @@ function drawCube(x, y, wx, wy, h, color, per) {
   bgCtx.fill();
 }
 
-function get2DArray() {
-  //Make the 2D array to hold all objects
+// function get2DArray() {
+//   //Make the 2D array to hold all objects
 
-  grid = [];
-  for (let i = 0; i < maze.length; i++) {
-    grid[i] = [];
-    for (let j = 0; j < maze[i].length; j++) {
-      color_code = "transparent";
-      if(maze[i][j] === 0){
-        color_code = "#4571b9";
-      }
-      grid[i][j] = {
-        color: color_code,
-        cost: 1,
-        type: "free",
-        x: i,
-        y: j,
-        gCost: 0,
-        hCost: 0,
-        fCost: 0
-      };
-    }
-  }
-}
+//   grid = [];
+//   for (let i = 0; i < maze.length; i++) {
+//     grid[i] = [];
+//     for (let j = 0; j < maze[i].length; j++) {
+//       color_code = "transparent";
+//       if(maze[i][j] === 0){
+//         color_code = "#4571b9";
+//       }
+//       grid[i][j] = {
+//         color: color_code,
+//         cost: 1,
+//         type: "free",
+//         x: i,
+//         y: j,
+//         gCost: 0,
+//         hCost: 0,
+//         fCost: 0
+//       };
+//     }
+//   }
+// }
 
 function drawMaze() {
   bgCtx.clearRect(0, 0, bg.width, bg.height);
@@ -495,7 +497,11 @@ function get2DArray() {
 
 
 async function generateMaze(rows, columns, algo) {
+  // let cellratio = Math.max(Math.round(Math.sqrt(10000/ (rows*columns))) - 1, 1)
+  let cellratio = Math.min(ratio[Math.floor(rows/10)], ratio[Math.floor(columns/10)])
 
+  // console.log(cellratio)
+  cellSize = cellSize * cellratio
   if(algo === "DFS"){
     await dfsGenerateMaze(rows,columns);
   }
@@ -503,11 +509,15 @@ async function generateMaze(rows, columns, algo) {
     await sideWinderGenerateMaze(rows,columns,0.5);
   }
   else if(algo == "Eller"){
+    cellSize /=cellratio
+    cellratio = Math.min(ratio[Math.floor(rows/10)+1], ratio[Math.floor(columns/10)+1])
+    cellSize = cellSize * cellratio
     rows_eller = [];
     makeEllerRows(rows_eller,rows);
     await createEllerMaze(rows_eller,rows);
-    console.log(maze);
+    // console.log(maze);
   }
+  cellSize /=cellratio
 }
 
 var myForm = document.getElementById("myForm")
@@ -515,6 +525,14 @@ var colorPicker = document.getElementById("mazeColor")
 var dialog = document.getElementById("myDialog")
 var dialogText = document.getElementById("dialogText")
 var closeDialogBtn = document.getElementById("closeDialogBtn")
+var speed = document.getElementById("spdbar")
+var speedText = document.getElementById("spd-value")
+
+speed.onchange = () => {
+  // console.log(speed.value)
+  speedText.innerHTML = speed.value
+  spdRatio = speed.value
+}
 
 closeDialogBtn.onclick = () => {
   dialog.close()
@@ -524,17 +542,15 @@ colorPicker.onchange = () => {
   mazeColor = myForm.mazeColor.value || mazeColor
 }
 
-let gencnt =0;
 myForm.onsubmit = function formHandle(e) {
   e.preventDefault();
-  let mazeSize =  myForm.mazeSize.value || 50
+  let mazeWidth =  myForm.width.value || 50;
+  let mazeHeight =  myForm.height.value || 50;
   mazeColor = myForm.mazeColor.value || mazeColor
-  // console.log(myForm.mazeAlgo.value)
-  gencnt++;
   myForm.submitBtn.setAttribute('disabled', "")
-  generateMaze(mazeSize, mazeSize, myForm.mazeAlgo.value).then(() => {
+  generateMaze(mazeWidth, mazeHeight, myForm.mazeAlgo.value).then(() => {
     myForm.submitBtn.removeAttribute('disabled');
-    // dialog.showModal()
-    // console.log(maze);
+    dialog.showModal()
+    console.log(maze);
   })
 };
