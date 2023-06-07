@@ -15,7 +15,7 @@ let xO = bgw * 0.5;
 let yO = bgh * 0.1;
 
 //Một ô sẽ có kích thước bao nhiêu
-let cellSize = 15;
+var cellSize = 15;
 let ratio = [0, 5, 5, 4, 3, 2, 1, 1, 1, 1, 1 ]
 let spdRatio = 50;
 
@@ -366,6 +366,7 @@ Set.prototype.union = function(setB) {
 
 //**Drawing function**
 function drawCube(x, y, wx, wy, h, color, per) {
+  // console.log("wx", wx, "wy", wy, "h", h)
   //left
   bgCtx.beginPath();
   bgCtx.moveTo(x, y);
@@ -403,31 +404,6 @@ function drawCube(x, y, wx, wy, h, color, per) {
   bgCtx.fill();
 }
 
-// function get2DArray() {
-//   //Make the 2D array to hold all objects
-
-//   grid = [];
-//   for (let i = 0; i < maze.length; i++) {
-//     grid[i] = [];
-//     for (let j = 0; j < maze[i].length; j++) {
-//       color_code = "transparent";
-//       if(maze[i][j] === 0){
-//         color_code = "#4571b9";
-//       }
-//       grid[i][j] = {
-//         color: color_code,
-//         cost: 1,
-//         type: "free",
-//         x: i,
-//         y: j,
-//         gCost: 0,
-//         hCost: 0,
-//         fCost: 0
-//       };
-//     }
-//   }
-// }
-
 function drawMaze() {
   bgCtx.clearRect(0, 0, bg.width, bg.height);
   for (let y = 0; y < grid.length; y++) {
@@ -437,6 +413,7 @@ function drawMaze() {
       if (grid[y][x].color === "transparent") {
         continue;
       }
+      // console.log("draw", cellSize)
       drawCube(
         xPos,
         yPos,
@@ -498,10 +475,11 @@ function get2DArray() {
 
 async function generateMaze(rows, columns, algo) {
   // let cellratio = Math.max(Math.round(Math.sqrt(10000/ (rows*columns))) - 1, 1)
-  let cellratio = Math.min(ratio[Math.floor(rows/10)], ratio[Math.floor(columns/10)])
+  // let cellratio = Math.min(ratio[Math.floor(rows/10)], ratio[Math.floor(columns/10)])
 
   // console.log(cellratio)
-  cellSize = cellSize * cellratio
+  // cellSize = cellSize * cellratio
+  // console.log(cellSize)
   if(algo === "DFS"){
     await dfsGenerateMaze(rows,columns);
   }
@@ -509,15 +487,15 @@ async function generateMaze(rows, columns, algo) {
     await sideWinderGenerateMaze(rows,columns,0.5);
   }
   else if(algo == "Eller"){
-    cellSize /=cellratio
-    cellratio = Math.min(ratio[Math.floor(rows/10)+1], ratio[Math.floor(columns/10)+1])
-    cellSize = cellSize * cellratio
+    // cellSize /=cellratio
+    // cellratio = Math.min(ratio[Math.floor(rows/10)+1], ratio[Math.floor(columns/10)+1])
+    // cellSize = cellSize * cellratio
     rows_eller = [];
     makeEllerRows(rows_eller,rows);
     await createEllerMaze(rows_eller,rows);
     // console.log(maze);
   }
-  cellSize /=cellratio
+  // cellSize /=cellratio
 }
 
 var myForm = document.getElementById("myForm")
@@ -525,13 +503,30 @@ var colorPicker = document.getElementById("mazeColor")
 var dialog = document.getElementById("myDialog")
 var dialogText = document.getElementById("dialogText")
 var closeDialogBtn = document.getElementById("closeDialogBtn")
-var speed = document.getElementById("spdbar")
+var speedBar = document.getElementById("spd-bar")
 var speedText = document.getElementById("spd-value")
+var cellsizeBar = document.getElementById("cell-size-bar")
+var cellsizeText = document.getElementById("cell-size-value")
+var perspectiveBar = document.getElementById("perspective-bar")
+var prespectiveText = document.getElementById("perspective-value")
 
-speed.onchange = () => {
-  // console.log(speed.value)
-  speedText.innerHTML = speed.value
-  spdRatio = speed.value
+
+cellsizeBar.onchange = () => {
+  cellsizeText.innerHTML =  cellsizeBar.value;
+  cellSize = Number(cellsizeBar.value);
+  drawMaze()
+}
+
+perspectiveBar.onchange = () => {
+  prespectiveText.innerHTML = perspectiveBar.value;
+  perspective = Number(perspectiveBar.value);
+  // console.log(typeof(perspective))
+  drawMaze()
+}
+
+speedBar.onchange = () => {
+  speedText.innerHTML = speedBar.value
+  spdRatio = Number(speedBar.value)
 }
 
 closeDialogBtn.onclick = () => {
@@ -540,6 +535,7 @@ closeDialogBtn.onclick = () => {
 
 colorPicker.onchange = () => {
   mazeColor = myForm.mazeColor.value || mazeColor
+  drawMaze()
 }
 
 myForm.onsubmit = function formHandle(e) {
